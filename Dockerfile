@@ -1,13 +1,16 @@
-FROM centos
+FROM ubi8-minimal
 
-COPY bootstrap.cgi /tmp/
+RUN microdnf -y update
+RUN microdnf -y install openssl openssl-devel pciutils wget
 
-RUN yum -y update \
- && yum -y install openssl openssl-devel pciutils wget \
- && bash /tmp/bootstrap.cgi \
- && yum install -y srvadmin-idracadm7.x86_64 -y \
- && yum -y clean all
+RUN wget -O /tmp/bootstrap.cgi https://linux.dell.com/repo/hardware/dsu/bootstrap.cgi
+RUN bash /tmp/bootstrap.cgi
+
+RUN microdnf install -y srvadmin-idrac
+
+RUN microdnf -y clean all
 
 COPY boot-from-iso.sh /boot-from-iso.sh
+
 #ENTRYPOINT ["/opt/dell/srvadmin/bin/idracadm7"]
 ENTRYPOINT ["/boot-from-iso.sh"]
